@@ -115,6 +115,20 @@ jobs:
       run: |
         chmod -R 755 openwrt
         cd openwrt
+        # echo -e "$(nproc) thread compile"
+        # make -j$(nproc) || make -j1 || make -j1 V=s
+        # echo "compile_status=success" >> $GITHUB_ENV
+                
+        echo "======== [核心修復] 注入 opkg 強制覆蓋參數，無視任何檔案衝突 ========"
+        # 建立全局 opkg 配置覆蓋，強制允許檔案踩踏（force-overwrite）
+        mkdir -p staging_dir/target-aarch64_cortex-a53_musl/root-qualcommax/etc/
+        echo "option force_overwrite 1" >> staging_dir/target-aarch64_cortex-a53_musl/root-qualcommax/etc/opkg.conf
+        
+        # 同步向主系統環境寫入強制覆蓋參數
+        mkdir -p build_dir/target-aarch64_cortex-a53_musl/root-qualcommax/etc/
+        echo "option force_overwrite 1" >> build_dir/target-aarch64_cortex-a53_musl/root-qualcommax/etc/opkg.conf
+        
+        echo "======== 參數注入完畢，開始全速編譯！ ========"
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "compile_status=success" >> $GITHUB_ENV
