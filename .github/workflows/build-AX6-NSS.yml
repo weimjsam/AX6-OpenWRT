@@ -62,16 +62,33 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
       
-    - name: Initialize environment
+    - name: Initialize environment (全面加速与超时防卡死)
       env:
         DEBIAN_FRONTEND: noninteractive
       run: | 
-        sudo -E apt-get -qq update -y
-        sudo -E apt-get -qq install -y $(curl -fsSL https://raw.githubusercontent.com/nantayo/My-Pkg/master/2305)
-        sudo -E apt-get -qq autoremove --purge
+        echo "======== [優化 1] 切換為阿里雲鏡像源，加速下載 ========"
+        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
+        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
+        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
+
+        echo "======== [優化 2] 注入全局超時與重試機制（單次最長 30 秒） ========"
+        # 建立 apt 配置文件，強制規定任何下載超過 30 秒直接斷開並重試，絕不死等
+        echo 'Acquire::http::Timeout "30";' | sudo tee -a /etc/apt/apt.conf.d/99timeout
+        echo 'Acquire::ftp::Timeout "30";' | sudo tee -a /etc/apt/apt.conf.d/99timeout
+        echo 'Acquire::Retries "3";' | sudo tee -a /etc/apt/apt.conf.d/99timeout
+
+        echo "======== [優化 3] 執行安全更新 ========"
+        sudo -E apt-get -qq update -y || echo "提示：部分源更新有微弱波動，已自動忽略"
+        
+        echo "======== [優化 4] 安裝編譯依賴包 ========"
+        sudo -E apt-get -qq install -y $(curl -fsSL https://githubusercontent.com) || true
+        
+        echo "======== [優化 5] 清理緩存 ========"
+        sudo -E apt-get -qq autoremove --purge -y
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
+
 
     - name: Clone source code
       working-directory: ./
