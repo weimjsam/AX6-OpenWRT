@@ -67,9 +67,9 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: | 
         echo "======== [優化 1] 切換為阿里雲鏡像源，加速下載 ========"
-        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
-        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
-        sudo sed -i 's/://ubuntu.com' /etc/apt/sources.list
+        sudo sed -i 's#://ubuntu.com#://aliyun.com#g' /etc/apt/sources.list
+        sudo sed -i 's#://ubuntu.com#://aliyun.com#g' /etc/apt/sources.list
+        sudo sed -i 's#://ubuntu.com#://aliyun.com#g' /etc/apt/sources.list
 
         echo "======== [優化 2] 注入全局超時與重試機制（單次最長 30 秒） ========"
         # 建立 apt 配置文件，強制規定任何下載超過 30 秒直接斷開並重試，絕不死等
