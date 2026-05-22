@@ -1,5 +1,10 @@
 name: Build OpenWRT for AX6-NSS
 
+permissions:
+  contents: write
+  actions: write
+
+
 on:
   workflow_dispatch:
 
